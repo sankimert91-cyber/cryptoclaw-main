@@ -33,7 +33,7 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
-            padding-bottom: 30px; /* Kein Navbar-Platz mehr nötig */
+            padding-bottom: 30px;
         }
 
         /* Balance Card */
@@ -63,7 +63,7 @@
             margin: 4px 0 0 0;
         }
 
-        /* Standard Card */
+        /* Cards */
         .card {
             background-color: var(--card-bg);
             border-radius: 20px;
@@ -78,7 +78,7 @@
             text-align: center;
         }
 
-        /* Watch Ads Section */
+        /* Ads */
         .reward-highlight {
             font-size: 28px;
             color: var(--accent-green);
@@ -121,6 +121,66 @@
             transition: width 0.3s ease;
         }
 
+        /* Daily Gift Grid */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .calendar-day {
+            background-color: #334155;
+            border-radius: 10px;
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .calendar-day.completed {
+            background-color: #15803d;
+            color: #whte;
+        }
+
+        .calendar-day.current {
+            background-color: var(--primary-blue);
+            box-shadow: 0 0 10px var(--primary-blue);
+        }
+
+        .day-pts {
+            color: var(--accent-green);
+            display: block;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        /* Input Fields */
+        .input-style {
+            width: 100%;
+            padding: 12px;
+            background-color: #334155;
+            border: 1px solid #475569;
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            box-sizing: border-box;
+            margin-bottom: 12px;
+            outline: none;
+            text-align: center;
+        }
+
+        .wallet-status {
+            font-size: 12px;
+            color: var(--accent-green);
+            text-align: center;
+            margin-top: -6px;
+            margin-bottom: 12px;
+            font-weight: 500;
+            display: none;
+        }
+
         /* Buttons */
         .btn {
             display: flex;
@@ -134,7 +194,7 @@
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.1s ease, opacity 0.2s ease;
+            transition: transform 0.1s ease;
             box-sizing: border-box;
         }
 
@@ -152,7 +212,7 @@
             color: white;
         }
 
-        /* Lists (Preistabelle) */
+        /* Lists */
         .list-item {
             display: flex;
             justify-content: space-between;
@@ -174,7 +234,6 @@
             font-weight: bold;
         }
 
-        /* Language & Referral */
         .select-style {
             background-color: #334155;
             color: white;
@@ -182,7 +241,6 @@
             padding: 8px 12px;
             border-radius: 8px;
             font-size: 14px;
-            outline: none;
         }
 
         .ref-box {
@@ -196,7 +254,15 @@
             text-align: center;
         }
 
-        /* Notification Toast */
+        .stat-counter {
+            font-size: 15px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        /* Toast Popup */
         .toast {
             position: fixed;
             top: 20px;
@@ -241,16 +307,29 @@
         </div>
 
         <div class="card">
-            <h3 class="card-title" id="txt-daily-title">Daily Reward</h3>
-            <button class="btn btn-blue" onclick="claimDaily()">
-                🎁 <span id="txt-btn-daily">Claim Daily Gift</span>
+            <h3 class="card-title" id="txt-daily-title">Daily Reward Calendar</h3>
+            
+            <div class="calendar-grid">
+                <div class="calendar-grid-item" id="day-box-1"><div class="calendar-day current">D1 <span class="day-pts">+10</span></div></div>
+                <div class="calendar-grid-item" id="day-box-2"><div class="calendar-day">D2 <span class="day-pts">+20</span></div></div>
+                <div class="calendar-grid-item" id="day-box-3"><div class="calendar-day">D3 <span class="day-pts">+30</span></div></div>
+                <div class="calendar-grid-item" id="day-box-4"><div class="calendar-day">D4 <span class="day-pts">+40</span></div></div>
+                <div class="calendar-grid-item" id="day-box-5"><div class="calendar-day">D5 <span class="day-pts">+50</span></div></div>
+                <div class="calendar-grid-item" id="day-box-6"><div class="calendar-day">D6 <span class="day-pts">+60</span></div></div>
+                <div class="calendar-grid-item" id="day-box-7" style="grid-column: span 2;"><div class="calendar-day">Day 7 <span class="day-pts">+100</span></div></div>
+            </div>
+
+            <button class="btn btn-blue" id="btn-daily-action" onclick="claimDailyCalendar()">
+                🎁 <span id="txt-btn-daily">Claim Reward</span>
             </button>
         </div>
 
         <div class="card">
-            <h3 class="card-title" id="txt-wallet-title">Crypto Wallet</h3>
-            <button class="btn btn-blue" style="background-color: #0088cc;" onclick="connectWallet()">
-                💎 <span id="txt-btn-wallet">Connect TON Wallet</span>
+            <h3 class="card-title" id="txt-wallet-title">Connect Wallet</h3>
+            <input type="text" class="input-style" id="wallet-input" placeholder="Paste TON or USDT Address here...">
+            <div class="wallet-status" id="wallet-status-msg">✓ Wallet address successfully saved!</div>
+            <button class="btn btn-blue" style="background-color: #0088cc;" onclick="saveWalletAddress()">
+                💎 <span id="txt-btn-wallet">Save Wallet</span>
             </button>
         </div>
 
@@ -273,8 +352,11 @@
         <div class="card">
             <h3 class="card-title" id="txt-ref-title">Invite Friends</h3>
             <p class="reward-subtext" id="txt-ref-sub" style="margin-top: -8px;">Earn +100 Points per friend!</p>
+            
+            <div class="stat-counter" id="txt-friends-count">Invited Friends: 0</div>
+
             <div class="ref-box" id="ref-link">https://t.me/cryptoclawgame_bot?start=user_id</div>
-            <button class="btn btn-blue" onclick="shareLink()">🔗 <span id="txt-btn-share">Copy & Share Link</span></button>
+            <button class="btn btn-blue" onclick="shareLinkAndSimulate()">🔗 <span id="txt-btn-share">Copy & Share Link</span></button>
         </div>
 
         <div class="card">
@@ -292,13 +374,14 @@
     </div>
 
     <script>
-        // Startwerte auf 0
         let points = 0;
         let claims = 0;
-        let dailyClaimed = false;
+        let friendsCount = 0;
+        let currentDay = 1;
         let currentLang = 'de';
+        
+        const dayRewards = [0, 10, 20, 30, 40, 50, 60, 100];
 
-        // Alle Übersetzungen
         const translations = {
             de: {
                 balanceTitle: "Gesamtes Guthaben",
@@ -306,21 +389,24 @@
                 perAd: "Pro Werbevideo",
                 claimsToday: "claims heute",
                 btnWatch: "Werbung schauen",
-                dailyTitle: "Tägliches Geschenk",
-                btnDaily: "Geschenk abholen",
-                walletTitle: "Krypto Wallet",
-                btnWallet: "TON Wallet verbinden",
+                dailyTitle: "Täglicher Belohnungskalender",
+                btnDaily: "Belohnung abholen",
+                walletTitle: "Wallet verbinden",
+                walletPlaceholder: "TON oder USDT Adresse hier einfügen...",
+                btnWallet: "Adresse speichern",
                 tableTitle: "Preistabelle (Auszahlung)",
                 p1: "3,000 Punkte", p2: "15,000 Punkte", p3: "30,000 Punkte",
                 refTitle: "Freunde einladen",
                 refSub: "Verdiene +100 Punkte pro Freund!",
+                friendsCounter: "Eingeladene Freunde: ",
                 btnShare: "Link kopieren & teilen",
                 langLabel: "Sprache wechseln",
                 toastAd: "+30 Punkte erhalten!",
-                toastDaily: "Tägliches Geschenk erhalten! (+50 Punkte)",
-                toastDailyAlready: "Du hast dein Geschenk heute schon abgeholt!",
-                toastWallet: "Verbindung zu Telegram Wallet / Tonkeeper wird geöffnet...",
-                toastRef: "Empfehlungslink kopiert!",
+                toastDaily: " erhalten!",
+                toastDailyAlready: "Morgen wartet die nächste Belohnung auf dich!",
+                toastWalletEmpty: "Bitte gib zuerst eine gültige Adresse ein!",
+                toastWalletSuccess: "Wallet erfolgreich verknüpft!",
+                toastRef: "Link kopiert! +100 Punkte für einen simulierten neuen Freund!",
                 toastMax: "Tägliches Limit von 100 Videos erreicht!"
             },
             en: {
@@ -329,21 +415,24 @@
                 perAd: "Per advertisement",
                 claimsToday: "claims today",
                 btnWatch: "Watch Ad",
-                dailyTitle: "Daily Reward",
-                btnDaily: "Claim Daily Gift",
-                walletTitle: "Crypto Wallet",
-                btnWallet: "Connect TON Wallet",
+                dailyTitle: "Daily Reward Calendar",
+                btnDaily: "Claim Reward",
+                walletTitle: "Connect Wallet",
+                walletPlaceholder: "Paste TON or USDT Address here...",
+                btnWallet: "Save Wallet",
                 tableTitle: "Preistabelle (Withdraw)",
                 p1: "3,000 Points", p2: "15,000 Points", p3: "30,000 Points",
                 refTitle: "Invite Friends",
                 refSub: "Earn +100 Points per friend!",
+                friendsCounter: "Invited Friends: ",
                 btnShare: "Copy & Share Link",
                 langLabel: "Language / Sprache",
                 toastAd: "+30 Points rewarded!",
-                toastDaily: "Daily gift claimed! (+50 Points)",
-                toastDailyAlready: "You already claimed your gift today!",
-                toastWallet: "Connecting to Telegram Wallet / Tonkeeper...",
-                toastRef: "Referral link copied to clipboard!",
+                toastDaily: " rewarded!",
+                toastDailyAlready: "Tomorrow the next reward will be waiting!",
+                toastWalletEmpty: "Please enter a valid address first!",
+                toastWalletSuccess: "Wallet connected successfully!",
+                toastRef: "Link copied! Simulated 1 new friend joined (+100 Pts)!",
                 toastMax: "Daily limit of 100 videos reached!"
             },
             ru: {
@@ -352,21 +441,24 @@
                 perAd: "За один просмотр",
                 claimsToday: "просмотров сегодня",
                 btnWatch: "Смотреть видео",
-                dailyTitle: "Ежедневная награда",
-                btnDaily: "Получить бонус",
-                walletTitle: "Крипто кошелек",
-                btnWallet: "Подключить TON кошелек",
+                dailyTitle: "Календарь ежедневных наград",
+                btnDaily: "Получить награду",
+                walletTitle: "Подключить кошелек",
+                walletPlaceholder: "Вставьте TON или USDT адрес...",
+                btnWallet: "Сохранить кошелек",
                 tableTitle: "Таблица цен (Вывод)",
                 p1: "3,000 Очков", p2: "15,000 Очков", p3: "30,000 Очков",
                 refTitle: "Пригласить друзей",
                 refSub: "Зарабатывай +100 очков за друга!",
+                friendsCounter: "Приглашено друзей: ",
                 btnShare: "Копировать ссылку",
                 langLabel: "Выбрать язык",
                 toastAd: "+30 очков начислено!",
-                toastDaily: "Бонус получен! (+50 очков)",
-                toastDailyAlready: "Вы уже получили бонус сегодня!",
-                toastWallet: "Подключение к Telegram Wallet / Tonkeeper...",
-                toastRef: "Ссылка скопирована в буфер!",
+                toastDaily: " получено!",
+                toastDailyAlready: "Следующая награда будет доступна завтра!",
+                toastWalletEmpty: "Пожалуйста, введите корректный адрес!",
+                toastWalletSuccess: "Кошелек успешно сохранен!",
+                toastRef: "Ссылка скопирована! +100 очков за симуляцию друга!",
                 toastMax: "Достигнут лимит 100 видео на сегодня!"
             },
             ar: {
@@ -375,21 +467,24 @@
                 perAd: "لكل إعلان",
                 claimsToday: "مطالبات اليوم",
                 btnWatch: "شاهد الإعلان",
-                dailyTitle: "المكافأة اليومية",
-                btnDaily: "احصل على الهدية اليومية",
-                walletTitle: "محفظة تشفير",
-                btnWallet: "ربط محفظة TON",
+                dailyTitle: "تقويم المكافآت اليومية",
+                btnDaily: "احصل على المكافأة",
+                walletTitle: "ربط المحفظة",
+                walletPlaceholder: "أدخل عنوان TON أو USDT هنا...",
+                btnWallet: "حفظ العنوان",
                 tableTitle: "جدول الأسعار (سحب)",
                 p1: "3,000 نقطة", p2: "15,000 نقطة", p3: "30,000 نقطة",
                 refTitle: "دعوة الأصدقاء",
                 refSub: "اكسب +100 نقطة لكل صديق!",
+                friendsCounter: "الأصدقاء المدعوون: ",
                 btnShare: "نسخ ومشاركة الرابط",
                 langLabel: "تغيير اللغة",
                 toastAd: "تم الحصول على +30 نقطة!",
-                toastDaily: "تم استلام الهدية اليومية! (+50 نقطة)",
-                toastDailyAlready: "لقد استلمت هديتك اليوم بالفعل!",
-                toastWallet: "جاري الاتصال بـ Telegram Wallet / Tonkeeper...",
-                toastRef: "تم نسخ رابط الإحالة!",
+                toastDaily: " تم استلام!",
+                toastDailyAlready: "المكافأة التالية ستكون متاحة غداً!",
+                toastWalletEmpty: "الرجاء إدخال عنوان صحيح أولاً!",
+                toastWalletSuccess: "تم ربط المحفظة بنجاح!",
+                toastRef: "تم نسخ الرابط! وحصلت على +100 نقطة لصديق جديد!",
                 toastMax: "تم الوصول للحد الأقصى 100 فيديو اليوم!"
             }
         };
@@ -400,10 +495,7 @@
             toast.style.background = isGreen ? "rgba(34, 197, 94, 0.95)" : "rgba(239, 68, 68, 0.95)";
             toast.style.color = isGreen ? "black" : "white";
             toast.style.display = "block";
-            
-            setTimeout(() => {
-                toast.style.display = "none";
-            }, 2000);
+            setTimeout(() => { toast.style.display = "none"; }, 2000);
         }
 
         function updateUI() {
@@ -411,6 +503,7 @@
             document.getElementById('usdt-display').innerText = `≈ ${(points / 3000).toFixed(2)} USDT`;
             document.getElementById('claim-text').innerText = `${claims}/100 ${translations[currentLang].claimsToday}`;
             document.getElementById('progress-fill').style.width = `${claims}%`;
+            document.getElementById('txt-friends-count').innerText = `${translations[currentLang].friendsCounter}${friendsCount}`;
         }
 
         function watchAd() {
@@ -424,24 +517,53 @@
             showToast(translations[currentLang].toastAd);
         }
 
-        function claimDaily() {
-            if(dailyClaimed) {
+        function claimDailyCalendar() {
+            if (currentDay > 7) {
                 showToast(translations[currentLang].toastDailyAlready, false);
                 return;
             }
-            points += 50;
-            dailyClaimed = true;
+
+            let earned = dayRewards[currentDay];
+            points += earned;
+            
+            // Alten Tag als completed markieren
+            let currentBox = document.getElementById(`day-box-${currentDay}`).firstElementChild;
+            currentBox.classList.remove('current');
+            currentBox.classList.add('completed');
+
+            showToast(`+${earned} ${translations[currentLang].toastDaily}`);
+            currentDay++;
+
+            // Nächsten Tag aktivieren (falls vorhanden)
+            if (currentDay <= 7) {
+                let nextBox = document.getElementById(`day-box-${currentDay}`).firstElementChild;
+                nextBox.classList.add('current');
+            } else {
+                document.getElementById('btn-daily-action').style.opacity = "0.5";
+            }
+
             updateUI();
-            showToast(translations[currentLang].toastDaily);
         }
 
-        function connectWallet() {
-            showToast(translations[currentLang].toastWallet);
+        function saveWalletAddress() {
+            let inputVal = document.getElementById('wallet-input').value.trim();
+            if(inputVal === "") {
+                showToast(translations[currentLang].toastWalletEmpty, false);
+                return;
+            }
+            document.getElementById('wallet-status-msg').style.display = "block";
+            showToast(translations[currentLang].toastWalletSuccess);
         }
 
-        function shareLink() {
+        function shareLinkAndSimulate() {
             let linkText = document.getElementById('ref-link').innerText;
             navigator.clipboard.writeText(linkText);
+            
+            // Simuliere einen neuen Freund für Testzwecke
+            friendsCount += 1;
+            points += 100;
+            
+            updateUI();
             showToast(translations[currentLang].toastRef);
         }
 
@@ -455,6 +577,7 @@
             document.getElementById('txt-daily-title').innerText = translations[lang].dailyTitle;
             document.getElementById('txt-btn-daily').innerText = translations[lang].btnDaily;
             document.getElementById('txt-wallet-title').innerText = translations[lang].walletTitle;
+            document.getElementById('wallet-input').placeholder = translations[lang].walletPlaceholder;
             document.getElementById('txt-btn-wallet').innerText = translations[lang].btnWallet;
             document.getElementById('txt-table-title').innerText = translations[lang].tableTitle;
             document.getElementById('txt-ref-title').innerText = translations[lang].refTitle;
@@ -469,7 +592,6 @@
             updateUI();
         }
 
-        // Direkt auf Deutsch starten
         updateUI();
         changeLanguage('de');
     </script>
