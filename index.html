@@ -33,16 +33,16 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
-            padding-bottom: 80px; /* Platz für die Navigation unten */
+            padding-bottom: 80px;
         }
 
-        /* Balance Card (Blaues Widget) */
+        /* Balance Card */
         .balance-card {
             background: linear-gradient(135deg, #1d4ed8, #2563eb);
             border-radius: 20px;
             padding: 20px;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-            position: relative;
+            text-align: left;
         }
 
         .balance-title {
@@ -63,7 +63,7 @@
             margin: 4px 0 0 0;
         }
 
-        /* Standard Card (Dunkelgrau) */
+        /* Standard Card */
         .card {
             background-color: var(--card-bg);
             border-radius: 20px;
@@ -116,7 +116,7 @@
         .progress-bar-fill {
             background-color: var(--accent-green);
             height: 100%;
-            width: 3%; /* 3/100 claims */
+            width: 0%;
             border-radius: 10px;
             transition: width 0.3s ease;
         }
@@ -149,7 +149,7 @@
         .btn-blue {
             background-color: var(--primary-blue);
             color: white;
-        }/* Listen-Struktur (Preistabelle, Einstellungen) */
+        }/* Lists */
         .list-item {
             display: flex;
             justify-content: space-between;
@@ -171,7 +171,7 @@
             font-weight: bold;
         }
 
-        /* Sprache & Referral */
+        /* Language & Referral */
         .select-style {
             background-color: #334155;
             color: white;
@@ -189,9 +189,10 @@
             word-break: break-all;
             margin-bottom: 10px;
             color: var(--text-muted);
+            text-align: center;
         }
 
-        /* Untere Navigationsleiste */
+        /* Navigation Bar */
         .nav-bar {
             position: fixed;
             bottom: 0;
@@ -203,6 +204,7 @@
             padding: 12px 0;
             border-top: 1px solid #334155;
             box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
+            z-index: 100;
         }
 
         .nav-item {
@@ -213,52 +215,77 @@
             flex-direction: column;
             align-items: center;
             gap: 4px;
+            flex: 1;
+            text-align: center;
         }
 
         .nav-item.active {
             color: var(--primary-blue);
         }
+
+        /* Notification Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            background: rgba(34, 197, 94, 0.95);
+            color: black;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 1000;
+            animation: fadeInOut 2.5s ease forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            15% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
     </style>
 </head>
 <body>
 
+    <div id="toast-msg" class="toast"></div>
+
     <div class="container">
 
         <div class="balance-card">
-            <p class="balance-title">Total Balance</p>
-            <p class="balance-amount" id="points-display">3,450</p>
-            <p class="balance-usdt" id="usdt-display">≈ 1.15 USDT</p>
+            <p class="balance-title" id="txt-balance-title">Total Balance</p>
+            <p class="balance-amount" id="points-display">0</p>
+            <p class="balance-usdt" id="usdt-display">≈ 0.00 USDT</p>
         </div>
 
         <div class="card">
-            <h3 class="card-title">Watch Ads & Earn</h3>
+            <h3 class="card-title" id="txt-ads-title">Watch Ads & Earn</h3>
             <div class="reward-highlight">+30 Points</div>
-            <div class="reward-subtext">Per advertisement</div>
+            <div class="reward-subtext" id="txt-per-ad">Per advertisement</div>
             
             <div class="progress-container">
-                <div class="progress-text" id="claim-text">3/100 claims today</div>
+                <div class="progress-text" id="claim-text">0/100 claims today</div>
                 <div class="progress-bar-bg">
                     <div class="progress-bar-fill" id="progress-fill"></div>
                 </div>
             </div>
 
             <button class="btn btn-green" onclick="watchAd()">
-                ▶ Watch Ad
+                ▶ <span id="txt-btn-watch">Watch Ad</span>
             </button>
         </div>
 
         <div class="card">
-            <h3 class="card-title">Daily Reward & Wallet</h3>
-            <button class="btn btn-blue" style="margin-bottom: 12px;" onclick="claimDaily()">
-                🎁 Claim Daily Gift
+            <h3 class="card-title" id="txt-wallet-title">Daily Reward & Wallet</h3>
+            <button class="btn btn-blue" style="margin-bottom: 12px;" onclick="claimDaily()">🎁 <span id="txt-btn-daily">Claim Daily Gift</span>
             </button>
             <button class="btn btn-blue" style="background-color: #0088cc;" onclick="connectWallet()">
-                💎 Connect TON Wallet
+                💎 <span id="txt-btn-wallet">Connect TON Wallet</span>
             </button>
         </div>
 
         <div class="card">
-            <h3 class="card-title">Preistabelle (Withdraw)</h3>
+            <h3 class="card-title" id="txt-table-title">Preistabelle (Withdraw)</h3>
             <div class="list-item">
                 <span class="list-label">3,000 Punkte</span>
                 <span class="list-value">1.00 USDT</span>
@@ -274,14 +301,15 @@
         </div>
 
         <div class="card">
-            <h3 class="card-title">Invite Friends</h3><p class="reward-subtext" style="margin-top: -8px;">Earn +100 Points per friend!</p>
-            <div class="ref-box" id="ref-link">https://t.me/cryptoclawgame_bot?start=user12345</div>
-            <button class="btn btn-blue" onclick="shareLink()">🔗 Copy & Share Link</button>
+            <h3 class="card-title" id="txt-ref-title">Invite Friends</h3>
+            <p class="reward-subtext" id="txt-ref-sub" style="margin-top: -8px;">Earn +100 Points per friend!</p>
+            <div class="ref-box" id="ref-link">https://t.me/cryptoclawgame_bot?start=user_id</div>
+            <button class="btn btn-blue" onclick="shareLink()">🔗 <span id="txt-btn-share">Copy & Share Link</span></button>
         </div>
 
         <div class="card">
             <div class="list-item" style="border: none; padding: 0;">
-                <span class="list-label" style="font-size: 16px;">Language / Sprache</span>
+                <span class="list-label" id="txt-lang-label" style="font-size: 16px;">Language / Sprache</span>
                 <select class="select-style" onchange="changeLanguage(this.value)">
                     <option value="de">Deutsch</option>
                     <option value="en" selected>English</option>
@@ -294,59 +322,215 @@
     </div>
 
     <div class="nav-bar">
-        <a href="#" class="nav-item active">🕹️ <span>Earn</span></a>
-        <a href="#" class="nav-item">🏆 <span>Tasks</span></a>
-        <a href="#" class="nav-item">👛 <span>Wallet</span></a>
-        <a href="#" class="nav-item">⚙️ <span>Settings</span></a>
+        <a href="#" class="nav-item active" onclick="switchTab('earn')">🕹️ <br><span id="nav-earn">Earn</span></a>
+        <a href="#" class="nav-item" onclick="switchTab('tasks')">🏆 <br><span id="nav-tasks">Tasks</span></a>
+        <a href="#" class="nav-item" onclick="switchTab('wallet')">👛 <br><span id="nav-wallet">Wallet</span></a>
+        <a href="#" class="nav-item" onclick="switchTab('settings')">⚙️ <br><span id="nav-settings">Settings</span></a>
     </div>
 
     <script>
-        let points = 3450;
-        let claims = 3;
+        // Startzustand komplett auf 0 gesetzt
+        let points = 0;
+        let claims = 0;
+        let dailyClaimed = false;
 
-        // Funktion: Werbung schauen (Simuliert)
+        // Sprachübersetzungen
+        const translations = {
+            de: {
+                balanceTitle: "Gesamtes Guthaben",
+                adsTitle: "Werbung schauen & verdienen",
+                perAd: "Pro Werbevideo",
+                claimsToday: "claims heute",
+                btnWatch: "Werbung schauen",
+                walletTitle: "Tägliches Geschenk & Wallet",
+                btnDaily: "Geschenk abholen",
+                btnWallet: "TON Wallet verbinden",
+                tableTitle: "Preistabelle (Auszahlung)",
+                refTitle: "Freunde einladen",
+                refSub: "Verdiene +100 Punkte pro Freund!",
+                btnShare: "Link kopieren & teilen",
+                langLabel: "Sprache wechseln",
+                navEarn: "Verdienen",
+                navTasks: "Aufgaben",
+                navWallet: "Brieftasche",
+                navSettings: "Optionen",
+                toastAd: "+30 Punkte erhalten!",
+                toastDaily: "Tägliches Geschenk erhalten! (+50 Punkte)",
+                toastDailyAlready: "Du hast dein Geschenk heute schon abgeholt!",
+                toastWallet: "Verbindung zu Tonkeeper/Telegram Wallet wird geöffnet...",toastRef: "Empfehlungslink kopiert!",
+                toastMax: "Tägliches Limit von 100 Videos erreicht!"
+            },
+            en: {
+                balanceTitle: "Total Balance",
+                adsTitle: "Watch Ads & Earn",
+                perAd: "Per advertisement",
+                claimsToday: "claims today",
+                btnWatch: "Watch Ad",
+                walletTitle: "Daily Reward & Wallet",
+                btnDaily: "Claim Daily Gift",
+                btnWallet: "Connect TON Wallet",
+                tableTitle: "Preistabelle (Withdraw)",
+                refTitle: "Invite Friends",
+                refSub: "Earn +100 Points per friend!",
+                btnShare: "Copy & Share Link",
+                langLabel: "Language / Sprache",
+                navEarn: "Earn",
+                navTasks: "Tasks",
+                navWallet: "Wallet",
+                navSettings: "Settings",
+                toastAd: "+30 Points rewarded!",
+                toastDaily: "Daily gift claimed! (+50 Points)",
+                toastDailyAlready: "You already claimed your gift today!",
+                toastWallet: "Connecting to Tonkeeper / Telegram Wallet...",
+                toastRef: "Referral link copied to clipboard!",
+                toastMax: "Daily limit of 100 videos reached!"
+            },
+            ru: {
+                balanceTitle: "Общий баланс",
+                adsTitle: "Смотри рекламу и зарабатывай",
+                perAd: "За один просмотр",
+                claimsToday: "просмотров сегодня",
+                btnWatch: "Смотреть видео",
+                walletTitle: "Ежедневный бонус и кошелек",
+                btnDaily: "Получить бонус",
+                btnWallet: "Подключить TON кошелек",
+                tableTitle: "Таблица цен (Вывод)",
+                refTitle: "Пригласить друзей",
+                refSub: "Зарабатывай +100 очков за друга!",
+                btnShare: "Копировать ссылку",
+                langLabel: "Выбрать язык",
+                navEarn: "Заработок",
+                navTasks: "Задания",
+                navWallet: "Кошелек",
+                navSettings: "Настройки",
+                toastAd: "+30 очков начислено!",
+                toastDaily: "Бонус получен! (+50 очков)",
+                toastDailyAlready: "Вы уже получили бонус сегодня!",
+                toastWallet: "Подключение к Tonkeeper / Telegram Wallet...",
+                toastRef: "Ссылка скопирована в буфер!",
+                toastMax: "Достигнут лимит 100 видео на сегодня!"
+            },
+            ar: {
+                balanceTitle: "الرصيد الإجمالي",
+                adsTitle: "شاهد الإعلانات واكسب",
+                perAd: "لكل إعلان",
+                claimsToday: "مطالبات اليوم",
+                btnWatch: "شاهد الإعلان",
+                walletTitle: "المكافأة اليومية والمحفظة",
+                btnDaily: "احصل على الهدية اليومية",
+                btnWallet: "ربط محفظة TON",
+                tableTitle: "جدول الأسعار (سحب)",
+                refTitle: "دعوة الأصدقاء",
+                refSub: "اكسب +100 نقطة لكل صديق!",
+                btnShare: "نسخ ومشاركة الرابط",
+                langLabel: "تغيير اللغة",
+                navEarn: "كسب",
+                navTasks: "مهام",
+                navWallet: "المحفظة",
+                navSettings: "الإعدادات",
+                toastAd: "تم الحصول على +30 نقطة!",
+                toastDaily: "تم استلام الهدية اليومية! (+50 نقطة)",
+                toastDailyAlready: "لقد استلمت هديتك اليوم بالفعل!",
+                toastWallet: "جاري الاتصال بـ Tonkeeper / محفظة Telegram...",
+                toastRef: "تم نسخ رابط الإحالة!",
+                toastMax: "تم الوصول للحد الأقصى 100 فيديو اليوم!"
+            }
+        };
+
+        let currentLang = 'en';
+
+        function showToast(text, isGreen = true) {const toast = document.getElementById('toast-msg');
+            toast.innerText = text;
+            toast.style.background = isGreen ? "rgba(34, 197, 94, 0.95)" : "rgba(239, 68, 68, 0.95)";
+            toast.style.color = isGreen ? "black" : "white";
+            toast.style.display = "block";
+            
+            toast.style.animation = 'none';
+            toast.offsetHeight;
+            toast.style.animation = null; 
+
+            setTimeout(() => {
+                toast.style.display = "none";
+            }, 2500);
+        }
+
+        function updateUI() {
+            document.getElementById('points-display').innerText = points.toLocaleString();
+            document.getElementById('usdt-display').innerText = ≈ ${(points / 3000).toFixed(2)} USDT;
+            document.getElementById('claim-text').innerText = ${claims}/100 ${translations[currentLang].claimsToday};
+            document.getElementById('progress-fill').style.width = ${claims}%;
+        }
+
+        // Funktion: Werbung schauen
         function watchAd() {
             if(claims >= 100) {
-                alert("Maximum für heute erreicht!");
+                showToast(translations[currentLang].toastMax, false);
                 return;
             }
             points += 30;
             claims += 1;
-            
-            // UI Updaten
-            document.getElementById('points-display').innerText = points.toLocaleString();
-            document.getElementById('usdt-display').innerText = ≈ ${(points / 3000).toFixed(2)} USDT;
-            document.getElementById('claim-text').innerText = ${claims}/100 claims today;
-            document.getElementById('progress-fill').style.width = ${claims}%;
-            
-            alert("+30 Punkte erhalten!");
+            updateUI();
+            showToast(translations[currentLang].toastAd);
         }
 
         // Funktion: Tägliches Geschenk
         function claimDaily() {
-            alert("Tägliches Geschenk beansprucht! (+50 Punkte)");
+            if(dailyClaimed) {
+                showToast(translations[currentLang].toastDailyAlready, false);
+                return;
+            }
             points += 50;
-            document.getElementById('points-display').innerText = points.toLocaleString();
-            document.getElementById('usdt-display').innerText = ≈ ${(points / 3000).toFixed(2)} USDT;
+            dailyClaimed = true;
+            updateUI();
+            showToast(translations[currentLang].toastDaily);
         }
 
         // Funktion: Wallet verbinden
         function connectWallet() {
-            alert("Verbindung mit TON Connect wird geöffnet...");
+            showToast(translations[currentLang].toastWallet);
         }
 
         // Funktion: Link kopieren
         function shareLink() {
             let linkText = document.getElementById('ref-link').innerText;
-            navigator.clipboard.writeText(linkText);
-            alert("Referral-Link in Zwischenablage kopiert!");
+            navigator.clipboard.writeText(linkText).then(() => {
+                showToast(translations[currentLang].toastRef);
+            });
         }
 
-        // Funktion: Sprache ändern
+        // Funktion: Sprache wechseln
         function changeLanguage(lang) {
-            alert("Sprache geändert zu: " + lang.toUpperCase());
-            // Hier kommt später die Logik rein, die die Texte austauscht
+            currentLang = lang;
+            
+            document.getElementById('txt-balance-title').innerText = translations[lang].balanceTitle;
+            document.getElementById('txt-ads-title').innerText = translations[lang].adsTitle;
+            document.getElementById('txt-per-ad').innerText = translations[lang].perAd;
+            document.getElementById('txt-btn-watch').innerText = translations[lang].btnWatch;
+            document.getElementById('txt-wallet-title').innerText = translations[lang].walletTitle;
+            document.getElementById('txt-btn-daily').innerText = translations[lang].btnDaily;
+            document.getElementById('txt-btn-wallet').innerText = translations[lang].btnWallet;
+            document.getElementById('txt-table-title').innerText = translations[lang].tableTitle;
+            document.getElementById('txt-ref-title').innerText = translations[lang].refTitle;
+            document.getElementById('txt-ref-sub').innerText = translations[lang].refSub;
+            document.getElementById('txt-btn-share').innerText = translations[lang].btnShare;
+            document.getElementById('txt-lang-label').innerText = translations[lang].langLabel;
+            
+            document.getElementById('nav-earn').innerText = translations[lang].navEarn;
+            document.getElementById('nav-tasks').innerText = translations[lang].navTasks;
+            document.getElementById('nav-wallet').innerText = translations[lang].navWallet;
+            document.getElementById('nav-settings').innerText = translations[lang].navSettings;
+
+            updateUI();
+        }function switchTab(tabName) {
+            const items = document.querySelectorAll('.nav-item');
+            items.forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            showToast(currentLang === 'de' ? "Tab gewechselt: " + tabName.toUpperCase() : "Tab changed: " + tabName.toUpperCase());
         }
+
+        // Initialisierung (Direkt auf Deutsch starten)
+        updateUI();
+        changeLanguage('de');
     </script>
 </body>
 </html>
