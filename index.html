@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CryptoClaw Earn</title>
+    <title>CryptoClaw Earn & Spin</title>
+    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -119,6 +120,36 @@
             width: 0%;
             border-radius: 10px;
             transition: width 0.3s ease;
+        }
+
+        /* GLÜCKSRAD DESIGN (LUCKY SPIN) */
+        .wheel-wrapper {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            margin: 20px auto;
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 20px solid #ef4444;
+            z-index: 10;
+        }
+
+        .wheel-canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(0,0,0,0.6), inset 0 0 10px rgba(255,255,255,0.2);
+            border: 4px solid #334155;
+            transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1);
         }
 
         /* Daily Gift Grid */
@@ -282,54 +313,11 @@
             display: none;
             z-index: 10000;
         }
-
-        /* SIMULIERTES WERBE-OVERLAY */
-        .ad-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: #000000;
-            z-index: 99999;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .ad-box {
-            background: #1e293b;
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            max-width: 400px;
-            width: 100%;
-            border: 2px solid var(--primary-blue);
-        }
-
-        .ad-countdown {
-            font-size: 24px;
-            font-weight: bold;
-            color: #f59e0b;
-            margin: 15px 0;
-        }
     </style>
 </head>
 <body>
 
     <div id="toast-msg" class="toast"></div>
-
-    <div id="video-ad-screen" class="ad-overlay">
-        <div class="ad-box">
-            <h2 style="margin:0; color:white;">Anzeige / Advertisement</h2>
-            <p style="color:var(--text-muted); font-size:14px;">Belohnung lädt nach Ablauf des Videos...</p>
-            <div class="ad-countdown" id="ad-timer">5</div>
-            <button class="btn btn-green" id="btn-close-ad" disabled onclick="closeAdVideo()">× Werbung schließen</button>
-        </div>
-    </div>
 
     <div class="container">
 
@@ -341,7 +329,7 @@
 
         <div class="card">
             <h3 class="card-title" id="txt-ads-title">Watch Ads & Earn</h3>
-            <div class="reward-highlight">+30 Points</div>
+            <div class="reward-highlight" id="txt-pts-value">+20 Points</div>
             <div class="reward-subtext" id="txt-per-ad">Per advertisement</div>
             
             <div class="progress-container">
@@ -351,14 +339,27 @@
                 </div>
             </div>
 
-            <button class="btn btn-green" onclick="startAdVideo('normal')">
+            <button class="btn btn-green" onclick="triggerAdsGramVideo('normal')">
                 ▶ <span id="txt-btn-watch">Watch Ad</span>
             </button>
         </div>
 
         <div class="card">
-            <h3 class="card-title" id="txt-daily-title">Daily Reward Calendar</h3>
+            <h3 class="card-title" id="txt-spin-title">Lucky Spin</h3>
+            <p class="reward-subtext" id="txt-spin-sub" style="margin-bottom: 5px;">Win up to +150 Points!</p>
             
+            <div class="wheel-wrapper">
+                <div class="wheel-pointer"></div>
+                <canvas id="wheelCanvas" class="wheel-canvas" width="300" height="300"></canvas>
+            </div>
+
+            <button class="btn btn-green" id="btn-spin-action" onclick="spinWheelClick()">
+                🎯 <span id="txt-btn-spin">Spin (Free)</span>
+            </button>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title" id="txt-daily-title">Daily Reward Calendar</h3>
             <div class="calendar-grid">
                 <div class="calendar-grid-item" id="day-box-1"><div class="calendar-day current">D1 <span class="day-pts">+10</span></div></div>
                 <div class="calendar-grid-item" id="day-box-2"><div class="calendar-day">D2 <span class="day-pts">+20</span></div></div>
@@ -368,8 +369,7 @@
                 <div class="calendar-grid-item" id="day-box-6"><div class="calendar-day">D6 <span class="day-pts">+60</span></div></div>
                 <div class="calendar-grid-item" id="day-box-7" style="grid-column: span 2;"><div class="calendar-day">Day 7 <span class="day-pts">+100</span></div></div>
             </div>
-
-            <button class="btn btn-blue" id="btn-daily-action" onclick="startAdVideo('daily')">
+            <button class="btn btn-blue" id="btn-daily-action" onclick="triggerAdsGramVideo('daily')">
                 🎁 <span id="txt-btn-daily">Claim Reward (Watch Ad)</span>
             </button>
         </div>
@@ -386,15 +386,15 @@
         <div class="card">
             <h3 class="card-title" id="txt-table-title">Preistabelle (Withdraw)</h3>
             <div class="list-item">
-                <span class="list-label" id="lbl-p1">3,000 Punkte</span>
+                <span class="list-label">3,000 Punkte</span>
                 <span class="list-value">1.00 USDT</span>
             </div>
             <div class="list-item">
-                <span class="list-label" id="lbl-p2">15,000 Punkte</span>
+                <span class="list-label">15,000 Punkte</span>
                 <span class="list-value">5.00 USDT</span>
             </div>
             <div class="list-item">
-                <span class="list-label" id="lbl-p3">30,000 Punkte</span>
+                <span class="list-label">30,000 Punkte</span>
                 <span class="list-value">10.00 USDT</span>
             </div>
         </div>
@@ -402,10 +402,8 @@
         <div class="card">
             <h3 class="card-title" id="txt-ref-title">Invite Friends</h3>
             <p class="reward-subtext" id="txt-ref-sub" style="margin-top: -8px;">Earn +100 Points per friend!</p>
-            
             <div class="stat-counter" id="txt-friends-count">Invited Friends: 0</div>
-
-            <div class="ref-box" id="ref-link">https://t.me/cryptoclawgame_bot?start=user_id</div>
+            <div class="ref-box" id="ref-link">https://t.me/CryptoClawMain_bot/Game</div>
             <button class="btn btn-blue" onclick="copyReferralLink()">🔗 <span id="txt-btn-share">Copy & Share Link</span></button>
         </div>
 
@@ -415,8 +413,6 @@
                 <select class="select-style" onchange="changeLanguage(this.value)">
                     <option value="de" selected>Deutsch</option>
                     <option value="en">English</option>
-                    <option value="ru">Русский</option>
-                    <option value="ar">العربية</option>
                 </select>
             </div>
         </div>
@@ -424,16 +420,21 @@
     </div>
 
     <script>
-        // Lokale Speicherdaten oder Standardwerte laden
         let points = parseInt(localStorage.getItem('cc_points')) || 0;
         let claims = parseInt(localStorage.getItem('cc_claims')) || 0;
         let friendsCount = parseInt(localStorage.getItem('cc_friends')) || 0;
         let currentDay = parseInt(localStorage.getItem('cc_day')) || 1;
         let nextClaimTime = parseInt(localStorage.getItem('cc_next_claim')) || 0;
+        let nextSpinTime = parseInt(localStorage.getItem('cc_next_spin')) || 0;
         let currentLang = localStorage.getItem('cc_lang') || 'de';
         
-        let activeAdType = ''; // 'normal' oder 'daily'
         const dayRewards = [0, 10, 20, 30, 40, 50, 60, 100];
+        const wheelOptions = [10, 30, 50, 5, 100, 20, 150, 15];
+        const wheelColors = ["#1e293b", "#2563eb", "#1e293b", "#22c55e", "#1e293b", "#3b82f6", "#1e293b", "#10b981"];
+        let isSpinning = false;
+
+        // DEINE LIVE ADSGRAM BLOCK-ID HIER DIREKT INTEGRIERT
+        const AdController = window.Adsgram ? window.Adsgram.init({ blockId: "30535", debug: true }) : null;
 
         const translations = {
             de: {
@@ -442,24 +443,28 @@
                 perAd: "Pro Werbevideo",
                 claimsToday: "claims heute",
                 btnWatch: "Werbung schauen",
+                spinTitle: "Glücksrad",
+                spinSub: "Gewinne bis zu +150 Punkte!",
+                btnSpinFree: "Drehen (Kostenlos)",
+                btnSpinAd: "Drehen (Werbung schauen)",
                 dailyTitle: "Täglicher Belohnungskalender",
                 btnDaily: "Belohnung abholen",
                 walletTitle: "Wallet verbinden",
                 walletPlaceholder: "TON oder USDT Adresse hier einfügen...",
-                btnWallet: "Adresse保存",
+                btnWallet: "Adresse speichern",
                 tableTitle: "Preistabelle (Auszahlung)",
-                p1: "3,000 Punkte", p2: "15,000 Punkte", p3: "30,000 Punkte",
                 refTitle: "Freunde einladen",
                 refSub: "Verdiene +100 Punkte pro Freund!",
                 friendsCounter: "Eingeladene Freunde: ",
                 btnShare: "Link kopieren",
                 langLabel: "Sprache wechseln",
-                toastAd: "+30 Punkte erhalten!",
+                toastAd: "+20 Punkte erhalten!",
                 toastDaily: " erhalten!",
                 toastWalletEmpty: "Bitte gib eine gültige Adresse ein!",
                 toastWalletSuccess: "Wallet erfolgreich gespeichert!",
                 toastRef: "Empfehlungslink kopiert!",
-                toastMax: "Limit von 100 Videos erreicht!"
+                toastMax: "Limit von 100 Videos erreicht!",
+                toastAdError: "Werbung konnte nicht geladen werden. Versuche es gleich noch einmal!"
             },
             en: {
                 balanceTitle: "Total Balance",
@@ -467,24 +472,28 @@
                 perAd: "Per advertisement",
                 claimsToday: "claims today",
                 btnWatch: "Watch Ad",
+                spinTitle: "Lucky Spin",
+                spinSub: "Win up to +150 Points!",
+                btnSpinFree: "Spin (Free)",
+                btnSpinAd: "Spin (Watch Ad)",
                 dailyTitle: "Daily Reward Calendar",
                 btnDaily: "Claim Reward",
                 walletTitle: "Connect Wallet",
                 walletPlaceholder: "Paste TON or USDT Address here...",
                 btnWallet: "Save Wallet",
                 tableTitle: "Preistabelle (Withdraw)",
-                p1: "3,000 Points", p2: "15,000 Points", p3: "30,000 Points",
                 refTitle: "Invite Friends",
                 refSub: "Earn +100 Points per friend!",
                 friendsCounter: "Invited Friends: ",
                 btnShare: "Copy Link",
                 langLabel: "Language / Sprache",
-                toastAd: "+30 Points rewarded!",
+                toastAd: "+20 Points rewarded!",
                 toastDaily: " rewarded!",
                 toastWalletEmpty: "Please enter a valid address first!",
                 toastWalletSuccess: "Wallet saved successfully!",
                 toastRef: "Referral link copied!",
-                toastMax: "Daily limit reached!"
+                toastMax: "Daily limit reached!",
+                toastAdError: "Failed to load advertisement. Please try again!"
             }
         };
 
@@ -497,15 +506,44 @@
             setTimeout(() => { toast.style.display = "none"; }, 2000);
         }
 
+        // GLÜCKSRAD ZEICHNEN
+        function drawWheel() {
+            const canvas = document.getElementById("wheelCanvas");
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            const numSegments = wheelOptions.length;
+            const anglePerSegment = (2 * Math.PI) / numSegments;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < numSegments; i++) {
+                ctx.beginPath();
+                ctx.moveTo(150, 150);
+                ctx.arc(150, 150, 140, i * anglePerSegment, (i + 1) * anglePerSegment);
+                ctx.fillStyle = wheelColors[i];
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#475569";
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(150, 150);
+                ctx.rotate(i * anglePerSegment + anglePerSegment / 2);
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 16px sans-serif";
+                ctx.textAlign = "right";
+                ctx.fillText("+" + wheelOptions[i], 120, 5);
+                ctx.restore();
+            }
+        }
+
         function updateUI() {
-            // Zahlenwerte updaten
             document.getElementById('points-display').innerText = points.toLocaleString();
             document.getElementById('usdt-display').innerText = `≈ ${(points / 3000).toFixed(2)} USDT`;
-            document.getElementById('claim-text').innerText = `${claims}/100 ${translations[currentLang]?.claimsToday || 'claims'}`;
+            document.getElementById('claim-text').innerText = `${claims}/100 ${translations[currentLang].claimsToday}`;
             document.getElementById('progress-fill').style.width = `${claims}%`;
-            document.getElementById('txt-friends-count').innerText = `${translations[currentLang]?.friendsCounter || 'Friends: '}${friendsCount}`;
+            document.getElementById('txt-friends-count').innerText = `${translations[currentLang].friendsCounter}${friendsCount}`;
 
-            // Kalender-Grafik aktualisieren
             for (let i = 1; i <= 7; i++) {
                 let box = document.getElementById(`day-box-${i}`)?.firstElementChild;
                 if(box) {
@@ -515,114 +553,145 @@
                 }
             }
 
-            // Lokale Daten permanent speichern
             localStorage.setItem('cc_points', points);
             localStorage.setItem('cc_claims', claims);
             localStorage.setItem('cc_day', currentDay);
         }
 
-        // Timer-Check für das Daily Gift
-        function checkDailyTimer() {
+        function checkTimers() {
             const now = Date.now();
-            const btn = document.getElementById('btn-daily-action');
-
+            
+            // Daily Gift Timer
+            const btnDaily = document.getElementById('btn-daily-action');
             if (now < nextClaimTime) {
-                btn.disabled = true;
-                let timeLeft = nextClaimTime - now;
-                
-                let hours = Math.floor(timeLeft / (1000 * 60 * 60));
-                let minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                let seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                
-                btn.innerText = `⏳ ${hours}h ${minutes}m ${seconds}s`;
-                setTimeout(checkDailyTimer, 1000);
+                btnDaily.disabled = true;
+                let tl = nextClaimTime - now;
+                let h = Math.floor(tl / 3600000); let m = Math.floor((tl % 3600000) / 60000);
+                btnDaily.innerText = `⏳ ${h}h ${m}m`;
             } else {
-                btn.disabled = false;
-                btn.innerText = currentLang === 'de' ? "🎁 Belohnung abholen (Werbung)" : "🎁 Claim Reward (Watch Ad)";
+                btnDaily.disabled = false;
+                btnDaily.innerText = translations[currentLang].btnDaily + " (Watch Ad)";
+            }
+
+            // Spin Timer Switch (Free vs Ad)
+            const btnSpin = document.getElementById('btn-spin-action');
+            if (isSpinning) return;
+
+            if (now < nextSpinTime) {
+                btnSpin.innerText = "▶ " + translations[currentLang].btnSpinAd;
+                btnSpin.className = "btn btn-green"; 
+            } else {
+                btnSpin.innerText = "🎯 " + translations[currentLang].btnSpinFree;
+                btnSpin.className = "btn btn-blue";
             }
         }
 
-        // Startet das Werbe-Overlay
-        function startAdVideo(type) {
-            if (type === 'normal' && claims >= 100) {
+        function spinWheelClick() {
+            if (isSpinning) return;
+            const now = Date.now();
+
+            if (now < nextSpinTime) {
+                // Kostenlose Zeit abgelaufen -> Werbung nötig
+                if (AdController) {
+                    AdController.show().then(() => { runWheelAnimation(); }).catch(() => {
+                        showToast(translations[currentLang].toastAdError, false);
+                    });
+                } else {
+                    runWheelAnimation(); // Fallback
+                }
+            } else {
+                // Kostenloser Spin verfügbar
+                nextSpinTime = Date.now() + (12 * 60 * 60 * 1000); // 12 Std CD
+                localStorage.setItem('cc_next_spin', nextSpinTime);
+                runWheelAnimation();
+            }
+        }
+
+        function runWheelAnimation() {
+            isSpinning = true;
+            document.getElementById('btn-spin-action').disabled = true;
+
+            const canvas = document.getElementById("wheelCanvas");
+            const numSegments = wheelOptions.length;
+            const prizeIndex = Math.floor(Math.random() * numSegments);
+            
+            const segmentDegrees = 360 / numSegments;
+            const targetRotation = 360 * 5 + (360 - (prizeIndex * segmentDegrees) - (segmentDegrees / 2));
+
+            canvas.style.transform = `rotate(${targetRotation}deg)`;
+
+            setTimeout(() => {
+                const wonPoints = wheelOptions[prizeIndex];
+                points += wonPoints;
+                showToast(`+${wonPoints} Punkte gewonnen! 🎡`);
+                
+                canvas.style.transition = "none";
+                canvas.style.transform = `rotate(${targetRotation % 360}deg)`;
+                setTimeout(() => { canvas.style.transition = "transform 4s cubic-bezier(0.1, 0.8, 0.1, 1)"; }, 50);
+
+                isSpinning = false;
+                document.getElementById('btn-spin-action').disabled = false;
+                updateUI();
+                checkTimers();
+            }, 4000);
+        }
+
+        function triggerAdsGramVideo(adType) {
+            if (adType === 'normal' && claims >= 100) {
                 showToast(translations[currentLang].toastMax, false);
                 return;
             }
-            
-            activeAdType = type;
-            const screen = document.getElementById('video-ad-screen');
-            const timerText = document.getElementById('ad-timer');
-            const closeBtn = document.getElementById('btn-close-ad');
-            
-            closeBtn.disabled = true;
-            screen.style.display = "flex";
-            
-            let count = 5;
-            timerText.innerText = count;
-            
-            let interval = setInterval(() => {
-                count--;
-                timerText.innerText = count;
-                if (count <= 0) {
-                    clearInterval(interval);
-                    closeBtn.disabled = false;
-                    timerText.innerText = "✓ Ready";
-                }
-            }, 1000);
+
+            if (AdController) {
+                AdController.show().then(() => { applyReward(adType); }).catch(() => {
+                    showToast(translations[currentLang].toastAdError, false);
+                });
+            } else {
+                applyReward(adType);
+            }
         }
 
-        // Schließt das Video und bucht die Punkte erst DANACH ab
-        function closeAdVideo() {
-            document.getElementById('video-ad-screen').style.display = "none";
-            
-            if (activeAdType === 'normal') {
-                points += 30;
+        function applyReward(type) {
+            if (type === 'normal') {
+                points += 20;
                 claims += 1;
                 showToast(translations[currentLang].toastAd);
             } 
-            else if (activeAdType === 'daily') {
+            else if (type === 'daily') {
                 let earned = dayRewards[currentDay] || 10;
                 points += earned;
                 showToast(`+${earned} ${translations[currentLang].toastDaily}`);
-                
-                // Nächste Abholung in exakt 24 Stunden erlauben
                 nextClaimTime = Date.now() + (24 * 60 * 60 * 1000);
                 localStorage.setItem('cc_next_claim', nextClaimTime);
-                
-                currentDay = currentDay >= 7 ? 1 : currentDay + 1; // Nach Tag 7 startet der Kalender neu
-                checkDailyTimer();
+                currentDay = currentDay >= 7 ? 1 : currentDay + 1;
             }
-            
             updateUI();
+            checkTimers();
         }
 
         function saveWalletAddress() {
             let inputVal = document.getElementById('wallet-input').value.trim();
-            if(inputVal === "") {
-                showToast(translations[currentLang].toastWalletEmpty, false);
-                return;
-            }
+            if(inputVal === "") { showToast(translations[currentLang].toastWalletEmpty, false); return; }
             document.getElementById('wallet-status-msg').style.display = "block";
             showToast(translations[currentLang].toastWalletSuccess);
         }
 
         function copyReferralLink() {
-            let linkText = document.getElementById('ref-link').innerText;
-            navigator.clipboard.writeText(linkText);
+            navigator.clipboard.writeText(document.getElementById('ref-link').innerText);
             showToast(translations[currentLang].toastRef);
-            // Keine automatische Punktevergabe mehr beim reinen Kopieren! Spieler erhöht sich erst bei echtem Beitritt.
         }
 
         function changeLanguage(lang) {
             currentLang = lang;
             localStorage.setItem('cc_lang', lang);
-            
-            let t = translations[lang] || translations['en'];
+            let t = translations[lang];
             
             document.getElementById('txt-balance-title').innerText = t.balanceTitle;
             document.getElementById('txt-ads-title').innerText = t.adsTitle;
             document.getElementById('txt-per-ad').innerText = t.perAd;
             document.getElementById('txt-btn-watch').innerText = t.btnWatch;
+            document.getElementById('txt-spin-title').innerText = t.spinTitle;
+            document.getElementById('txt-spin-sub').innerText = t.spinSub;
             document.getElementById('txt-daily-title').innerText = t.dailyTitle;
             document.getElementById('txt-wallet-title').innerText = t.walletTitle;
             document.getElementById('wallet-input').placeholder = t.walletPlaceholder;
@@ -633,14 +702,15 @@
             document.getElementById('txt-btn-share').innerText = t.btnShare;
             document.getElementById('txt-lang-label').innerText = t.langLabel;
             
-            checkDailyTimer();
             updateUI();
+            checkTimers();
         }
 
-        // Startkonfiguration
+        // Start-Aktionen
+        drawWheel();
         updateUI();
         changeLanguage(currentLang);
-        checkDailyTimer();
+        setInterval(checkTimers, 5000);
     </script>
 </body>
 </html>
