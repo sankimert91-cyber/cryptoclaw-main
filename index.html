@@ -33,19 +33,7 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
-            padding-bottom: 90px;
-        }
-
-        /* Tabs Steuerung */
-        .tab-content {
-            display: none;
-            flex-direction: column;
-            gap: 16px;
-            width: 100%;
-        }
-
-        .tab-content.active-tab {
-            display: flex;
+            padding-bottom: 30px; /* Kein Navbar-Platz mehr nötig */
         }
 
         /* Balance Card */
@@ -157,12 +145,14 @@
         .btn-green {
             background-color: var(--accent-green);
             color: #000000;
-        }.btn-blue {
+        }
+
+        .btn-blue {
             background-color: var(--primary-blue);
             color: white;
         }
 
-        /* Lists */
+        /* Lists (Preistabelle) */
         .list-item {
             display: flex;
             justify-content: space-between;
@@ -206,42 +196,6 @@
             text-align: center;
         }
 
-        /* Navigation Bar */
-        .nav-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: var(--card-bg);
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 0;
-            border-top: 1px solid #334155;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
-            z-index: 1000;
-        }
-
-        .nav-item {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 2px;
-            flex: 1;
-            text-align: center;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 6px 0;
-        }
-
-        .nav-item.active {
-            color: var(--primary-blue);
-        }
-
         /* Notification Toast */
         .toast {
             position: fixed;
@@ -269,100 +223,82 @@
             <p class="balance-usdt" id="usdt-display">≈ 0.00 USDT</p>
         </div>
 
-        <div id="tab-earn" class="tab-content active-tab">
-            <div class="card">
-                <h3 class="card-title" id="txt-ads-title">Watch Ads & Earn</h3>
-                <div class="reward-highlight">+30 Points</div>
-                <div class="reward-subtext" id="txt-per-ad">Per advertisement</div>
-                
-                <div class="progress-container">
-                    <div class="progress-text" id="claim-text">0/100 claims today</div>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" id="progress-fill"></div>
-                    </div>
+        <div class="card">
+            <h3 class="card-title" id="txt-ads-title">Watch Ads & Earn</h3>
+            <div class="reward-highlight">+30 Points</div>
+            <div class="reward-subtext" id="txt-per-ad">Per advertisement</div>
+            
+            <div class="progress-container">
+                <div class="progress-text" id="claim-text">0/100 claims today</div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progress-fill"></div>
                 </div>
-
-                <button class="btn btn-green" onclick="watchAd()">
-                    ▶ <span id="txt-btn-watch">Watch Ad</span>
-                </button>
             </div>
 
-            <div class="card">
-                <h3 class="card-title" id="txt-daily-title">Daily Reward</h3>
-                <button class="btn btn-blue" onclick="claimDaily()">
-                    🎁 <span id="txt-btn-daily">Claim Daily Gift</span>
-                </button>
+            <button class="btn btn-green" onclick="watchAd()">
+                ▶ <span id="txt-btn-watch">Watch Ad</span>
+            </button>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title" id="txt-daily-title">Daily Reward</h3>
+            <button class="btn btn-blue" onclick="claimDaily()">
+                🎁 <span id="txt-btn-daily">Claim Daily Gift</span>
+            </button>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title" id="txt-wallet-title">Crypto Wallet</h3>
+            <button class="btn btn-blue" style="background-color: #0088cc;" onclick="connectWallet()">
+                💎 <span id="txt-btn-wallet">Connect TON Wallet</span>
+            </button>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title" id="txt-table-title">Preistabelle (Withdraw)</h3>
+            <div class="list-item">
+                <span class="list-label" id="lbl-p1">3,000 Punkte</span>
+                <span class="list-value">1.00 USDT</span>
             </div>
-        </div><div id="tab-tasks" class="tab-content">
-            <div class="card">
-                <h3 class="card-title" id="txt-tasks-title">Tasks</h3>
-                <p class="reward-subtext" style="margin-bottom:0;">Hier folgen bald Social Tasks (Telegram Kanäle beitreten, etc.)</p>
+            <div class="list-item">
+                <span class="list-label" id="lbl-p2">15,000 Punkte</span>
+                <span class="list-value">5.00 USDT</span>
+            </div>
+            <div class="list-item">
+                <span class="list-label" id="lbl-p3">30,000 Punkte</span>
+                <span class="list-value">10.00 USDT</span>
             </div>
         </div>
 
-        <div id="tab-wallet" class="tab-content">
-            <div class="card">
-                <h3 class="card-title" id="txt-wallet-title">Crypto Wallet</h3>
-                <button class="btn btn-blue" style="background-color: #0088cc;" onclick="connectWallet()">
-                    💎 <span id="txt-btn-wallet">Connect TON Wallet</span>
-                </button>
-            </div>
+        <div class="card">
+            <h3 class="card-title" id="txt-ref-title">Invite Friends</h3>
+            <p class="reward-subtext" id="txt-ref-sub" style="margin-top: -8px;">Earn +100 Points per friend!</p>
+            <div class="ref-box" id="ref-link">https://t.me/cryptoclawgame_bot?start=user_id</div>
+            <button class="btn btn-blue" onclick="shareLink()">🔗 <span id="txt-btn-share">Copy & Share Link</span></button>
+        </div>
 
-            <div class="card">
-                <h3 class="card-title" id="txt-table-title">Preistabelle (Withdraw)</h3>
-                <div class="list-item">
-                    <span class="list-label">3,000 Punkte</span>
-                    <span class="list-value">1.00 USDT</span>
-                </div>
-                <div class="list-item">
-                    <span class="list-label">15,000 Punkte</span>
-                    <span class="list-value">5.00 USDT</span>
-                </div>
-                <div class="list-item">
-                    <span class="list-label">30,000 Punkte</span>
-                    <span class="list-value">10.00 USDT</span>
-                </div>
+        <div class="card">
+            <div class="list-item" style="border: none; padding: 0;">
+                <span class="list-label" id="txt-lang-label" style="font-size: 16px;">Language / Sprache</span>
+                <select class="select-style" onchange="changeLanguage(this.value)">
+                    <option value="de" selected>Deutsch</option>
+                    <option value="en">English</option>
+                    <option value="ru">Русский</option>
+                    <option value="ar">العربية</option>
+                </select>
             </div>
         </div>
 
-        <div id="tab-settings" class="tab-content">
-            <div class="card">
-                <h3 class="card-title" id="txt-ref-title">Invite Friends</h3>
-                <p class="reward-subtext" id="txt-ref-sub" style="margin-top: -8px;">Earn +100 Points per friend!</p>
-                <div class="ref-box" id="ref-link">https://t.me/cryptoclawgame_bot?start=user_id</div>
-                <button class="btn btn-blue" onclick="shareLink()">🔗 <span id="txt-btn-share">Copy & Share Link</span></button>
-            </div>
-
-            <div class="card">
-                <div class="list-item" style="border: none; padding: 0;">
-                    <span class="list-label" id="txt-lang-label" style="font-size: 16px;">Language / Sprache</span>
-                    <select class="select-style" onchange="changeLanguage(this.value)">
-                        <option value="de" selected>Deutsch</option>
-                        <option value="en">English</option>
-                        <option value="ru">Русский</option>
-                        <option value="ar">العربية</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="nav-bar">
-        <button id="nav-btn-earn" class="nav-item active" onclick="switchTab('earn')">🕹️<br><span id="nav-earn">Earn</span></button>
-        <button id="nav-btn-tasks" class="nav-item" onclick="switchTab('tasks')">🏆<br><span id="nav-tasks">Tasks</span></button>
-        <button id="nav-btn-wallet" class="nav-item" onclick="switchTab('wallet')">👛<br><span id="nav-wallet">Wallet</span></button>
-        <button id="nav-btn-settings" class="nav-item" onclick="switchTab('settings')">⚙️<br><span id="nav-settings">Settings</span></button>
     </div>
 
     <script>
-        // Variablen im Zustand 0
+        // Startwerte auf 0
         let points = 0;
         let claims = 0;
         let dailyClaimed = false;
         let currentLang = 'de';
 
-        // Übersetzungen
+        // Alle Übersetzungen
         const translations = {
             de: {
                 balanceTitle: "Gesamtes Guthaben",
@@ -372,21 +308,18 @@
                 btnWatch: "Werbung schauen",
                 dailyTitle: "Tägliches Geschenk",
                 btnDaily: "Geschenk abholen",
-                walletTitle: "Krypto Wallet",btnWallet: "TON Wallet verbinden",
+                walletTitle: "Krypto Wallet",
+                btnWallet: "TON Wallet verbinden",
                 tableTitle: "Preistabelle (Auszahlung)",
+                p1: "3,000 Punkte", p2: "15,000 Punkte", p3: "30,000 Punkte",
                 refTitle: "Freunde einladen",
                 refSub: "Verdiene +100 Punkte pro Freund!",
                 btnShare: "Link kopieren & teilen",
                 langLabel: "Sprache wechseln",
-                tasksTitle: "Aufgaben",
-                navEarn: "Verdienen",
-                navTasks: "Aufgaben",
-                navWallet: "Brieftasche",
-                navSettings: "Optionen",
                 toastAd: "+30 Punkte erhalten!",
                 toastDaily: "Tägliches Geschenk erhalten! (+50 Punkte)",
                 toastDailyAlready: "Du hast dein Geschenk heute schon abgeholt!",
-                toastWallet: "Verbindung zu Tonkeeper/Telegram Wallet wird geöffnet...",
+                toastWallet: "Verbindung zu Telegram Wallet / Tonkeeper wird geöffnet...",
                 toastRef: "Empfehlungslink kopiert!",
                 toastMax: "Tägliches Limit von 100 Videos erreicht!"
             },
@@ -401,19 +334,15 @@
                 walletTitle: "Crypto Wallet",
                 btnWallet: "Connect TON Wallet",
                 tableTitle: "Preistabelle (Withdraw)",
+                p1: "3,000 Points", p2: "15,000 Points", p3: "30,000 Points",
                 refTitle: "Invite Friends",
                 refSub: "Earn +100 Points per friend!",
                 btnShare: "Copy & Share Link",
                 langLabel: "Language / Sprache",
-                tasksTitle: "Tasks",
-                navEarn: "Earn",
-                navTasks: "Tasks",
-                navWallet: "Wallet",
-                navSettings: "Settings",
                 toastAd: "+30 Points rewarded!",
                 toastDaily: "Daily gift claimed! (+50 Points)",
                 toastDailyAlready: "You already claimed your gift today!",
-                toastWallet: "Connecting to Tonkeeper / Telegram Wallet...",
+                toastWallet: "Connecting to Telegram Wallet / Tonkeeper...",
                 toastRef: "Referral link copied to clipboard!",
                 toastMax: "Daily limit of 100 videos reached!"
             },
@@ -428,19 +357,15 @@
                 walletTitle: "Крипто кошелек",
                 btnWallet: "Подключить TON кошелек",
                 tableTitle: "Таблица цен (Вывод)",
+                p1: "3,000 Очков", p2: "15,000 Очков", p3: "30,000 Очков",
                 refTitle: "Пригласить друзей",
                 refSub: "Зарабатывай +100 очков за друга!",
                 btnShare: "Копировать ссылку",
                 langLabel: "Выбрать язык",
-                tasksTitle: "Задания",
-                navEarn: "Заработок",
-                navTasks: "Задания",
-                navWallet: "Кошелек",
-                navSettings: "Настройки",
                 toastAd: "+30 очков начислено!",
                 toastDaily: "Бонус получен! (+50 очков)",
                 toastDailyAlready: "Вы уже получили бонус сегодня!",
-                toastWallet: "Подключение к Tonkeeper / Telegram Wallet...",
+                toastWallet: "Подключение к Telegram Wallet / Tonkeeper...",
                 toastRef: "Ссылка скопирована в буфер!",
                 toastMax: "Достигнут лимит 100 видео на сегодня!"
             },
@@ -451,22 +376,19 @@
                 claimsToday: "مطالبات اليوم",
                 btnWatch: "شاهد الإعلان",
                 dailyTitle: "المكافأة اليومية",
-                btnDaily: "احصل على الهدية اليومية",walletTitle: "محفظة تشفير",
+                btnDaily: "احصل على الهدية اليومية",
+                walletTitle: "محفظة تشفير",
                 btnWallet: "ربط محفظة TON",
                 tableTitle: "جدول الأسعار (سحب)",
+                p1: "3,000 نقطة", p2: "15,000 نقطة", p3: "30,000 نقطة",
                 refTitle: "دعوة الأصدقاء",
                 refSub: "اكسب +100 نقطة لكل صديق!",
                 btnShare: "نسخ ومشاركة الرابط",
                 langLabel: "تغيير اللغة",
-                tasksTitle: "مهام",
-                navEarn: "كسب",
-                navTasks: "مهام",
-                navWallet: "المحفظة",
-                navSettings: "الإعدادات",
                 toastAd: "تم الحصول على +30 نقطة!",
                 toastDaily: "تم استلام الهدية اليومية! (+50 نقطة)",
                 toastDailyAlready: "لقد استلمت هديتك اليوم بالفعل!",
-                toastWallet: "جاري الاتصال بـ Tonkeeper / محفظة Telegram...",
+                toastWallet: "جاري الاتصال بـ Telegram Wallet / Tonkeeper...",
                 toastRef: "تم نسخ رابط الإحالة!",
                 toastMax: "تم الوصول للحد الأقصى 100 فيديو اليوم!"
             }
@@ -486,9 +408,9 @@
 
         function updateUI() {
             document.getElementById('points-display').innerText = points.toLocaleString();
-            document.getElementById('usdt-display').innerText = ≈ ${(points / 3000).toFixed(2)} USDT;
-            document.getElementById('claim-text').innerText = ${claims}/100 ${translations[currentLang].claimsToday};
-            document.getElementById('progress-fill').style.width = ${claims}%;
+            document.getElementById('usdt-display').innerText = `≈ ${(points / 3000).toFixed(2)} USDT`;
+            document.getElementById('claim-text').innerText = `${claims}/100 ${translations[currentLang].claimsToday}`;
+            document.getElementById('progress-fill').style.width = `${claims}%`;
         }
 
         function watchAd() {
@@ -535,34 +457,16 @@
             document.getElementById('txt-wallet-title').innerText = translations[lang].walletTitle;
             document.getElementById('txt-btn-wallet').innerText = translations[lang].btnWallet;
             document.getElementById('txt-table-title').innerText = translations[lang].tableTitle;
-            document.getElementById('txt-ref-title').innerText = translations[lang].refTitle;document.getElementById('txt-ref-sub').innerText = translations[lang].refSub;
+            document.getElementById('txt-ref-title').innerText = translations[lang].refTitle;
+            document.getElementById('txt-ref-sub').innerText = translations[lang].refSub;
             document.getElementById('txt-btn-share').innerText = translations[lang].btnShare;
             document.getElementById('txt-lang-label').innerText = translations[lang].langLabel;
-            document.getElementById('txt-tasks-title').innerText = translations[lang].tasksTitle;
             
-            document.getElementById('nav-earn').innerText = translations[lang].navEarn;
-            document.getElementById('nav-tasks').innerText = translations[lang].navTasks;
-            document.getElementById('nav-wallet').innerText = translations[lang].navWallet;
-            document.getElementById('nav-settings').innerText = translations[lang].navSettings;
+            document.getElementById('lbl-p1').innerText = translations[lang].p1;
+            document.getElementById('lbl-p2').innerText = translations[lang].p2;
+            document.getElementById('lbl-p3').innerText = translations[lang].p3;
 
             updateUI();
-        }
-
-        // Sichere Tab-Umschaltung
-        function switchTab(tabName) {
-            // Alle Tab-Inhalte ausblenden
-            const contents = document.querySelectorAll('.tab-content');
-            contents.forEach(content => content.classList.remove('active-tab'));
-            
-            // Alle Navbar-Buttons deaktivieren
-            const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(item => item.classList.remove('active'));
-            
-            // Gewünschten Tab einblenden
-            document.getElementById('tab-' + tabName).classList.add('active-tab');
-            
-            // Gewünschten Navbar-Button aktivieren
-            document.getElementById('nav-btn-' + tabName).classList.add('active');
         }
 
         // Direkt auf Deutsch starten
