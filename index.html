@@ -141,7 +141,7 @@
 
         .calendar-day.completed {
             background-color: #15803d;
-            color: #whte;
+            color: white;
         }
 
         .calendar-day.current {
@@ -212,6 +212,13 @@
             color: white;
         }
 
+        .btn:disabled {
+            background-color: #475569 !important;
+            color: var(--text-muted) !important;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         /* Lists */
         .list-item {
             display: flex;
@@ -275,11 +282,54 @@
             display: none;
             z-index: 10000;
         }
+
+        /* SIMULIERTES WERBE-OVERLAY */
+        .ad-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000000;
+            z-index: 99999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .ad-box {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            border: 2px solid var(--primary-blue);
+        }
+
+        .ad-countdown {
+            font-size: 24px;
+            font-weight: bold;
+            color: #f59e0b;
+            margin: 15px 0;
+        }
     </style>
 </head>
 <body>
 
     <div id="toast-msg" class="toast"></div>
+
+    <div id="video-ad-screen" class="ad-overlay">
+        <div class="ad-box">
+            <h2 style="margin:0; color:white;">Anzeige / Advertisement</h2>
+            <p style="color:var(--text-muted); font-size:14px;">Belohnung lädt nach Ablauf des Videos...</p>
+            <div class="ad-countdown" id="ad-timer">5</div>
+            <button class="btn btn-green" id="btn-close-ad" disabled onclick="closeAdVideo()">× Werbung schließen</button>
+        </div>
+    </div>
 
     <div class="container">
 
@@ -301,7 +351,7 @@
                 </div>
             </div>
 
-            <button class="btn btn-green" onclick="watchAd()">
+            <button class="btn btn-green" onclick="startAdVideo('normal')">
                 ▶ <span id="txt-btn-watch">Watch Ad</span>
             </button>
         </div>
@@ -319,8 +369,8 @@
                 <div class="calendar-grid-item" id="day-box-7" style="grid-column: span 2;"><div class="calendar-day">Day 7 <span class="day-pts">+100</span></div></div>
             </div>
 
-            <button class="btn btn-blue" id="btn-daily-action" onclick="claimDailyCalendar()">
-                🎁 <span id="txt-btn-daily">Claim Reward</span>
+            <button class="btn btn-blue" id="btn-daily-action" onclick="startAdVideo('daily')">
+                🎁 <span id="txt-btn-daily">Claim Reward (Watch Ad)</span>
             </button>
         </div>
 
@@ -356,7 +406,7 @@
             <div class="stat-counter" id="txt-friends-count">Invited Friends: 0</div>
 
             <div class="ref-box" id="ref-link">https://t.me/cryptoclawgame_bot?start=user_id</div>
-            <button class="btn btn-blue" onclick="shareLinkAndSimulate()">🔗 <span id="txt-btn-share">Copy & Share Link</span></button>
+            <button class="btn btn-blue" onclick="copyReferralLink()">🔗 <span id="txt-btn-share">Copy & Share Link</span></button>
         </div>
 
         <div class="card">
@@ -374,12 +424,15 @@
     </div>
 
     <script>
-        let points = 0;
-        let claims = 0;
-        let friendsCount = 0;
-        let currentDay = 1;
-        let currentLang = 'de';
+        // Lokale Speicherdaten oder Standardwerte laden
+        let points = parseInt(localStorage.getItem('cc_points')) || 0;
+        let claims = parseInt(localStorage.getItem('cc_claims')) || 0;
+        let friendsCount = parseInt(localStorage.getItem('cc_friends')) || 0;
+        let currentDay = parseInt(localStorage.getItem('cc_day')) || 1;
+        let nextClaimTime = parseInt(localStorage.getItem('cc_next_claim')) || 0;
+        let currentLang = localStorage.getItem('cc_lang') || 'de';
         
+        let activeAdType = ''; // 'normal' oder 'daily'
         const dayRewards = [0, 10, 20, 30, 40, 50, 60, 100];
 
         const translations = {
@@ -393,21 +446,20 @@
                 btnDaily: "Belohnung abholen",
                 walletTitle: "Wallet verbinden",
                 walletPlaceholder: "TON oder USDT Adresse hier einfügen...",
-                btnWallet: "Adresse speichern",
+                btnWallet: "Adresse保存",
                 tableTitle: "Preistabelle (Auszahlung)",
                 p1: "3,000 Punkte", p2: "15,000 Punkte", p3: "30,000 Punkte",
                 refTitle: "Freunde einladen",
                 refSub: "Verdiene +100 Punkte pro Freund!",
                 friendsCounter: "Eingeladene Freunde: ",
-                btnShare: "Link kopieren & teilen",
+                btnShare: "Link kopieren",
                 langLabel: "Sprache wechseln",
                 toastAd: "+30 Punkte erhalten!",
                 toastDaily: " erhalten!",
-                toastDailyAlready: "Morgen wartet die nächste Belohnung auf dich!",
-                toastWalletEmpty: "Bitte gib zuerst eine gültige Adresse ein!",
-                toastWalletSuccess: "Wallet erfolgreich verknüpft!",
-                toastRef: "Link kopiert! +100 Punkte für einen simulierten neuen Freund!",
-                toastMax: "Tägliches Limit von 100 Videos erreicht!"
+                toastWalletEmpty: "Bitte gib eine gültige Adresse ein!",
+                toastWalletSuccess: "Wallet erfolgreich gespeichert!",
+                toastRef: "Empfehlungslink kopiert!",
+                toastMax: "Limit von 100 Videos erreicht!"
             },
             en: {
                 balanceTitle: "Total Balance",
@@ -425,67 +477,14 @@
                 refTitle: "Invite Friends",
                 refSub: "Earn +100 Points per friend!",
                 friendsCounter: "Invited Friends: ",
-                btnShare: "Copy & Share Link",
+                btnShare: "Copy Link",
                 langLabel: "Language / Sprache",
                 toastAd: "+30 Points rewarded!",
                 toastDaily: " rewarded!",
-                toastDailyAlready: "Tomorrow the next reward will be waiting!",
                 toastWalletEmpty: "Please enter a valid address first!",
-                toastWalletSuccess: "Wallet connected successfully!",
-                toastRef: "Link copied! Simulated 1 new friend joined (+100 Pts)!",
-                toastMax: "Daily limit of 100 videos reached!"
-            },
-            ru: {
-                balanceTitle: "Общий баланс",
-                adsTitle: "Смотри рекламу и зарабатывай",
-                perAd: "За один просмотр",
-                claimsToday: "просмотров сегодня",
-                btnWatch: "Смотреть видео",
-                dailyTitle: "Календарь ежедневных наград",
-                btnDaily: "Получить награду",
-                walletTitle: "Подключить кошелек",
-                walletPlaceholder: "Вставьте TON или USDT адрес...",
-                btnWallet: "Сохранить кошелек",
-                tableTitle: "Таблица цен (Вывод)",
-                p1: "3,000 Очков", p2: "15,000 Очков", p3: "30,000 Очков",
-                refTitle: "Пригласить друзей",
-                refSub: "Зарабатывай +100 очков за друга!",
-                friendsCounter: "Приглашено друзей: ",
-                btnShare: "Копировать ссылку",
-                langLabel: "Выбрать язык",
-                toastAd: "+30 очков начислено!",
-                toastDaily: " получено!",
-                toastDailyAlready: "Следующая награда будет доступна завтра!",
-                toastWalletEmpty: "Пожалуйста, введите корректный адрес!",
-                toastWalletSuccess: "Кошелек успешно сохранен!",
-                toastRef: "Ссылка скопирована! +100 очков за симуляцию друга!",
-                toastMax: "Достигнут лимит 100 видео на сегодня!"
-            },
-            ar: {
-                balanceTitle: "الرصيد الإجمالي",
-                adsTitle: "شاهد الإعلانات واكسب",
-                perAd: "لكل إعلان",
-                claimsToday: "مطالبات اليوم",
-                btnWatch: "شاهد الإعلان",
-                dailyTitle: "تقويم المكافآت اليومية",
-                btnDaily: "احصل على المكافأة",
-                walletTitle: "ربط المحفظة",
-                walletPlaceholder: "أدخل عنوان TON أو USDT هنا...",
-                btnWallet: "حفظ العنوان",
-                tableTitle: "جدول الأسعار (سحب)",
-                p1: "3,000 نقطة", p2: "15,000 نقطة", p3: "30,000 نقطة",
-                refTitle: "دعوة الأصدقاء",
-                refSub: "اكسب +100 نقطة لكل صديق!",
-                friendsCounter: "الأصدقاء المدعوون: ",
-                btnShare: "نسخ ومشاركة الرابط",
-                langLabel: "تغيير اللغة",
-                toastAd: "تم الحصول على +30 نقطة!",
-                toastDaily: " تم استلام!",
-                toastDailyAlready: "المكافأة التالية ستكون متاحة غداً!",
-                toastWalletEmpty: "الرجاء إدخال عنوان صحيح أولاً!",
-                toastWalletSuccess: "تم ربط المحفظة بنجاح!",
-                toastRef: "تم نسخ الرابط! وحصلت على +100 نقطة لصديق جديد!",
-                toastMax: "تم الوصول للحد الأقصى 100 فيديو اليوم!"
+                toastWalletSuccess: "Wallet saved successfully!",
+                toastRef: "Referral link copied!",
+                toastMax: "Daily limit reached!"
             }
         };
 
@@ -499,49 +498,101 @@
         }
 
         function updateUI() {
+            // Zahlenwerte updaten
             document.getElementById('points-display').innerText = points.toLocaleString();
             document.getElementById('usdt-display').innerText = `≈ ${(points / 3000).toFixed(2)} USDT`;
-            document.getElementById('claim-text').innerText = `${claims}/100 ${translations[currentLang].claimsToday}`;
+            document.getElementById('claim-text').innerText = `${claims}/100 ${translations[currentLang]?.claimsToday || 'claims'}`;
             document.getElementById('progress-fill').style.width = `${claims}%`;
-            document.getElementById('txt-friends-count').innerText = `${translations[currentLang].friendsCounter}${friendsCount}`;
+            document.getElementById('txt-friends-count').innerText = `${translations[currentLang]?.friendsCounter || 'Friends: '}${friendsCount}`;
+
+            // Kalender-Grafik aktualisieren
+            for (let i = 1; i <= 7; i++) {
+                let box = document.getElementById(`day-box-${i}`)?.firstElementChild;
+                if(box) {
+                    box.classList.remove('current', 'completed');
+                    if (i < currentDay) box.classList.add('completed');
+                    else if (i === currentDay) box.classList.add('current');
+                }
+            }
+
+            // Lokale Daten permanent speichern
+            localStorage.setItem('cc_points', points);
+            localStorage.setItem('cc_claims', claims);
+            localStorage.setItem('cc_day', currentDay);
         }
 
-        function watchAd() {
-            if(claims >= 100) {
+        // Timer-Check für das Daily Gift
+        function checkDailyTimer() {
+            const now = Date.now();
+            const btn = document.getElementById('btn-daily-action');
+
+            if (now < nextClaimTime) {
+                btn.disabled = true;
+                let timeLeft = nextClaimTime - now;
+                
+                let hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                let minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                let seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                
+                btn.innerText = `⏳ ${hours}h ${minutes}m ${seconds}s`;
+                setTimeout(checkDailyTimer, 1000);
+            } else {
+                btn.disabled = false;
+                btn.innerText = currentLang === 'de' ? "🎁 Belohnung abholen (Werbung)" : "🎁 Claim Reward (Watch Ad)";
+            }
+        }
+
+        // Startet das Werbe-Overlay
+        function startAdVideo(type) {
+            if (type === 'normal' && claims >= 100) {
                 showToast(translations[currentLang].toastMax, false);
                 return;
             }
-            points += 30;
-            claims += 1;
-            updateUI();
-            showToast(translations[currentLang].toastAd);
+            
+            activeAdType = type;
+            const screen = document.getElementById('video-ad-screen');
+            const timerText = document.getElementById('ad-timer');
+            const closeBtn = document.getElementById('btn-close-ad');
+            
+            closeBtn.disabled = true;
+            screen.style.display = "flex";
+            
+            let count = 5;
+            timerText.innerText = count;
+            
+            let interval = setInterval(() => {
+                count--;
+                timerText.innerText = count;
+                if (count <= 0) {
+                    clearInterval(interval);
+                    closeBtn.disabled = false;
+                    timerText.innerText = "✓ Ready";
+                }
+            }, 1000);
         }
 
-        function claimDailyCalendar() {
-            if (currentDay > 7) {
-                showToast(translations[currentLang].toastDailyAlready, false);
-                return;
-            }
-
-            let earned = dayRewards[currentDay];
-            points += earned;
+        // Schließt das Video und bucht die Punkte erst DANACH ab
+        function closeAdVideo() {
+            document.getElementById('video-ad-screen').style.display = "none";
             
-            // Alten Tag als completed markieren
-            let currentBox = document.getElementById(`day-box-${currentDay}`).firstElementChild;
-            currentBox.classList.remove('current');
-            currentBox.classList.add('completed');
-
-            showToast(`+${earned} ${translations[currentLang].toastDaily}`);
-            currentDay++;
-
-            // Nächsten Tag aktivieren (falls vorhanden)
-            if (currentDay <= 7) {
-                let nextBox = document.getElementById(`day-box-${currentDay}`).firstElementChild;
-                nextBox.classList.add('current');
-            } else {
-                document.getElementById('btn-daily-action').style.opacity = "0.5";
+            if (activeAdType === 'normal') {
+                points += 30;
+                claims += 1;
+                showToast(translations[currentLang].toastAd);
+            } 
+            else if (activeAdType === 'daily') {
+                let earned = dayRewards[currentDay] || 10;
+                points += earned;
+                showToast(`+${earned} ${translations[currentLang].toastDaily}`);
+                
+                // Nächste Abholung in exakt 24 Stunden erlauben
+                nextClaimTime = Date.now() + (24 * 60 * 60 * 1000);
+                localStorage.setItem('cc_next_claim', nextClaimTime);
+                
+                currentDay = currentDay >= 7 ? 1 : currentDay + 1; // Nach Tag 7 startet der Kalender neu
+                checkDailyTimer();
             }
-
+            
             updateUI();
         }
 
@@ -555,45 +606,41 @@
             showToast(translations[currentLang].toastWalletSuccess);
         }
 
-        function shareLinkAndSimulate() {
+        function copyReferralLink() {
             let linkText = document.getElementById('ref-link').innerText;
             navigator.clipboard.writeText(linkText);
-            
-            // Simuliere einen neuen Freund für Testzwecke
-            friendsCount += 1;
-            points += 100;
-            
-            updateUI();
             showToast(translations[currentLang].toastRef);
+            // Keine automatische Punktevergabe mehr beim reinen Kopieren! Spieler erhöht sich erst bei echtem Beitritt.
         }
 
         function changeLanguage(lang) {
             currentLang = lang;
+            localStorage.setItem('cc_lang', lang);
             
-            document.getElementById('txt-balance-title').innerText = translations[lang].balanceTitle;
-            document.getElementById('txt-ads-title').innerText = translations[lang].adsTitle;
-            document.getElementById('txt-per-ad').innerText = translations[lang].perAd;
-            document.getElementById('txt-btn-watch').innerText = translations[lang].btnWatch;
-            document.getElementById('txt-daily-title').innerText = translations[lang].dailyTitle;
-            document.getElementById('txt-btn-daily').innerText = translations[lang].btnDaily;
-            document.getElementById('txt-wallet-title').innerText = translations[lang].walletTitle;
-            document.getElementById('wallet-input').placeholder = translations[lang].walletPlaceholder;
-            document.getElementById('txt-btn-wallet').innerText = translations[lang].btnWallet;
-            document.getElementById('txt-table-title').innerText = translations[lang].tableTitle;
-            document.getElementById('txt-ref-title').innerText = translations[lang].refTitle;
-            document.getElementById('txt-ref-sub').innerText = translations[lang].refSub;
-            document.getElementById('txt-btn-share').innerText = translations[lang].btnShare;
-            document.getElementById('txt-lang-label').innerText = translations[lang].langLabel;
+            let t = translations[lang] || translations['en'];
             
-            document.getElementById('lbl-p1').innerText = translations[lang].p1;
-            document.getElementById('lbl-p2').innerText = translations[lang].p2;
-            document.getElementById('lbl-p3').innerText = translations[lang].p3;
-
+            document.getElementById('txt-balance-title').innerText = t.balanceTitle;
+            document.getElementById('txt-ads-title').innerText = t.adsTitle;
+            document.getElementById('txt-per-ad').innerText = t.perAd;
+            document.getElementById('txt-btn-watch').innerText = t.btnWatch;
+            document.getElementById('txt-daily-title').innerText = t.dailyTitle;
+            document.getElementById('txt-wallet-title').innerText = t.walletTitle;
+            document.getElementById('wallet-input').placeholder = t.walletPlaceholder;
+            document.getElementById('txt-btn-wallet').innerText = t.btnWallet;
+            document.getElementById('txt-table-title').innerText = t.tableTitle;
+            document.getElementById('txt-ref-title').innerText = t.refTitle;
+            document.getElementById('txt-ref-sub').innerText = t.refSub;
+            document.getElementById('txt-btn-share').innerText = t.btnShare;
+            document.getElementById('txt-lang-label').innerText = t.langLabel;
+            
+            checkDailyTimer();
             updateUI();
         }
 
+        // Startkonfiguration
         updateUI();
-        changeLanguage('de');
+        changeLanguage(currentLang);
+        checkDailyTimer();
     </script>
 </body>
 </html>
